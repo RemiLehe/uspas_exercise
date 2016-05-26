@@ -6,11 +6,6 @@ Usage
 -----
 - To run the code in non-interactive mode:
 Type `python em_pic_1d.py`
-
-- To run the code in interactive mode:
-Type `ipython --matplotlib` and then:
-`from em_pic_1d import step, plot_fields`
-Then call e.g. `step(10)` and `plot_fields()` as many times as you want.
 """
 import os
 import shutil # os and shutil are utility packages, that help manipulate files
