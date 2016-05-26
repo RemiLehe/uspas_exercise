@@ -70,8 +70,8 @@ class EM1DSolver(object):
                 # ASSIGNMENT: Replace "+ 0" by the appropriate expression
                 self.By[k] = self.By[k] + 0
             # Apply periodic boundary conditions (do not modify)
-            self.By[0] = self.By[self.Nz-1]
-            self.By[self.Nz] = self.By[1]
+            self.By[0] = self.By[self.Nz]
+            self.By[self.Nz+1] = self.By[1]
             
             # Update the Ex field from time n*dt to time (n+1)*dt
             # Loop over the gridpoints
@@ -79,8 +79,8 @@ class EM1DSolver(object):
                 # ASSIGNMENT: Replace "+ 0" by the appropriate expression
                 self.Ex[k] = self.Ex[k] + 0
             # Apply periodic boundary conditions (do not modify)
-            self.Ex[0] = self.Ex[self.Nz-1]
-            self.Ex[self.Nz] = self.Ex[1]
+            self.Ex[0] = self.Ex[self.Nz]
+            self.Ex[self.Nz+1] = self.Ex[1]
     
             # Increment the iteration number
             self.n = self.n+1
