@@ -5,3 +5,5 @@ rm -rf Forthon_task
 cp ../uspas/A1a_EM_PIC/problems/em_pic_1d.py ./
 
 cp ../uspas/W1_Python_interpreter/problems/euler.py ./
+
+cp ../uspas/A1b_EM_Waves/problems/em_unstable.py ./
