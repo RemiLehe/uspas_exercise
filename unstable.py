@@ -39,9 +39,9 @@ class EM1DSolver(object):
         self.n = 0  # Iteration number
         self.z = np.arange(1,Nz+1)*self.dz  # Position of the grid points
         self.Ex = np.zeros( Nz+2 )  # At iteration n, Ex[k] represents the 
-                                # field at time n*dt and position (k + 1/2)*dz
+                                # field at time n*dt and position k*dz
         self.By = np.zeros( Nz+2 )  # At iteration n, By[k] represents the
-                                # field at time (n - 1/2)*dz and position k*dz
+                         # field at time (n - 1/2)*dz and position (k+1/2)*dz
         # The first and last element of Ex and By are ghost cell: they simply
         # duplicate the last-but-one and second element respectively
         # (periodic boundaries)
@@ -52,8 +52,8 @@ class EM1DSolver(object):
         def pulse_shape(z, t):
             return( np.cos(k*(z-c*t)) * np.exp(-(z-c*t-Lz/2)**2/L**2) )
 
-        self.Ex[1:-1] = pulse_shape( self.z + 0.5*self.dz, 0 )
-        self.By[1:-1] = 1./c * pulse_shape( self.z, -0.5*self.dt )
+        self.Ex[1:-1] = pulse_shape( self.z, 0 )
+        self.By[1:-1] = 1./c * pulse_shape( self.z + 0.5*self.dz, -0.5*self.dt )
 
 
     def step(self, N_steps):
@@ -66,16 +66,25 @@ class EM1DSolver(object):
         for i_step in range(N_steps):
 
             # Update the By field from time (n-1/2)*dt to time (n+1/2)*dt
-            self.By[1:-1] = self.By[1:-1] \
-                   - self.dt*(self.Ex[1:-1]-self.Ex[:-2])/self.dz
+            for k in range(1,self.Nz+1):
+                # ASSIGNMENT: Replace "+ 0" by the appropriate expression
+                self.By[k] = self.By[k] \
+                    - self.dt*(self.Ex[k+1]-self.Ex[k])/self.dz
+            # *** Bonus: *** #
+            # self.By[1:-1] -= self.dt * (self.Ex[2:] - self.Ex[1:-1]) / self.dz
+
             # Apply periodic boundary conditions (do not modify)
             self.By[0] = self.By[self.Nz]
             self.By[self.Nz+1] = self.By[1]
             
             # Update the Ex field from time n*dt to time (n+1)*dt
             # Loop over the gridpoints
-            self.Ex[1:-1] = self.Ex[1:-1] \
-                   - c**2*self.dt*(self.By[2:]-self.By[1:-1])/self.dz
+            for k in range(1,self.Nz+1):
+                # ASSIGNMENT: Replace "+ 0" by the appropriate expression
+                self.Ex[k] = self.Ex[k] \
+                   - c**2*self.dt*(self.By[k]-self.By[k-1])/self.dz
+            # *** Bonus: *** #
+            # self.Ex[1:-1] -= c**2 * self.dt * (self.By[1:-1] - self.By[:-2]) / self.dz
             # Apply periodic boundary conditions (do not modify)
             self.Ex[0] = self.Ex[self.Nz]
             self.Ex[self.Nz+1] = self.Ex[1]
@@ -95,13 +104,13 @@ class EM1DSolver(object):
         plt.suptitle('Fields at iteration %d' %self.n)
         # Plot of Ex
         plt.subplot(211)
-        plt.plot( self.z+0.5*self.dz, self.Ex[1:-1], 'o-' )
+        plt.plot( self.z, self.Ex[1:-1], 'o-' )
         plt.xlim(0, self.Lz)
         plt.ylabel('$E_x^n$')
         plt.xlabel('z')
         # Plot of By
         plt.subplot(212)
-        plt.plot( self.z, self.By[1:-1], 'o-' )
+        plt.plot( self.z+0.5*self.dz, self.By[1:-1], 'o-' )
         plt.xlim(0, self.Lz)
         plt.ylabel('$B_y^{n-1/2}$')
         plt.xlabel('z')
