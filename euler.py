@@ -26,8 +26,9 @@ class EulerSolver(object):
         e_rms = np.sqrt( 1./self.N * ((self.x-x_exact)**2).sum() )
         print( e_rms )
         # Plot the result
-        plt.plot( self.t, self.x )
-        plt.plot( self.t, x_exact, '--' )
+        plt.plot( self.t, self.x, label="Euler")
+        plt.plot( self.t, x_exact, '--', label="Analytic Solution")
+        plt.legend(loc=3)
         plt.show()
 
 if __name__ == '__main__':
