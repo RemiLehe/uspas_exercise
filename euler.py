@@ -31,8 +31,6 @@ class EulerSolver(object):
         plt.legend(loc=3)
         plt.show()
 
-if __name__ == '__main__':
-
-    solver = EulerSolver( 200 )
-    solver.euler_integration()
-    solver.evaluate_result()
+solver = EulerSolver( 200 )
+solver.euler_integration()
+solver.evaluate_result()
