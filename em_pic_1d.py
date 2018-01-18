@@ -41,7 +41,7 @@ class EM1DSolver(object):
         self.Ex = np.zeros( Nz+2 )  # At iteration n, Ex[k] represents the 
                                 # field at time n*dt and position k*dz
         self.By = np.zeros( Nz+2 )  # At iteration n, By[k] represents the
-                         # field at time (n - 1/2)*dz and position (k+1/2)*dz
+                         # field at time (n - 1/2)*dt and position (k+1/2)*dz
         # The first and last element of Ex and By are ghost cell: they simply
         # duplicate the last-but-one and second element respectively
         # (periodic boundaries)
