@@ -66,25 +66,13 @@ class EM1DSolver(object):
         for i_step in range(N_steps):
 
             # Update the By field from time (n-1/2)*dt to time (n+1/2)*dt
-            for k in range(1,self.Nz+1):
-                # ASSIGNMENT: Replace "+ 0" by the appropriate expression
-                self.By[k] = self.By[k] \
-                    - self.dt*(self.Ex[k+1]-self.Ex[k])/self.dz
-            # *** Bonus: *** #
-            # self.By[1:-1] -= self.dt * (self.Ex[2:] - self.Ex[1:-1]) / self.dz
-
+            self.By[1:-1] -= self.dt * (self.Ex[2:] - self.Ex[1:-1]) / self.dz
             # Apply periodic boundary conditions (do not modify)
             self.By[0] = self.By[self.Nz]
             self.By[self.Nz+1] = self.By[1]
             
             # Update the Ex field from time n*dt to time (n+1)*dt
-            # Loop over the gridpoints
-            for k in range(1,self.Nz+1):
-                # ASSIGNMENT: Replace "+ 0" by the appropriate expression
-                self.Ex[k] = self.Ex[k] \
-                   - c**2*self.dt*(self.By[k]-self.By[k-1])/self.dz
-            # *** Bonus: *** #
-            # self.Ex[1:-1] -= c**2 * self.dt * (self.By[1:-1] - self.By[:-2]) / self.dz
+            self.Ex[1:-1] -= c**2 * self.dt * (self.By[1:-1] - self.By[:-2]) / self.dz
             # Apply periodic boundary conditions (do not modify)
             self.Ex[0] = self.Ex[self.Nz]
             self.Ex[self.Nz+1] = self.Ex[1]
