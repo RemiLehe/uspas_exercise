@@ -17,7 +17,7 @@ from mpi4py.MPI import COMM_WORLD as mpi_comm
 
 class EM1DSolver(object):
 
-    def __init__(self, Nz_global=10000, Lz=200., dtcoef=1.):
+    def __init__(self, Nz_global=2000, Lz=200., dtcoef=1.):
         """
         Initialize the EM1DSolver object
 
@@ -165,7 +165,7 @@ if __name__ == '__main__':
 
     # Run Nz iterations (in 10 batches, with plotting inbetween)
     em = EM1DSolver( )
-    for i in range( 5 ):
+    for i in range( 10 ):
         em.plot_fields( save_figure=True )
         em.step( 200 )
     em.plot_fields( save_figure=True )
