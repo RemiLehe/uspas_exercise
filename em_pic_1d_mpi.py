@@ -75,7 +75,7 @@ class EM1DSolver(object):
             # receive values to be put into guard cells
             By_from_left_proc, By_from_right_proc = \
                 exchange_guard_cells( self.By[1], self.By[self.Nz_local] )
-            # ASSIGNEMENT: Set the guard cells with the right value
+            # ASSIGNEMENT: Set the guard cells with the correct value
             self.By[0] = 0
             self.By[self.Nz_local+1] = 0
 
@@ -88,7 +88,7 @@ class EM1DSolver(object):
             # receive values to be put into guard cells
             Ex_from_left_proc, Ex_from_right_proc = \
                 exchange_guard_cells( self.Ex[1], self.Ex[self.Nz_local] )
-            # ASSIGNEMENT: Set the guard cells with the right value
+            # ASSIGNEMENT: Set the guard cells with the correct value
             self.Ex[0] = 0
             self.Ex[self.Nz_local+1] = 0
 
