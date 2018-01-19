@@ -61,7 +61,8 @@ class EM1DSolver(object):
         """
         Perform `N_steps` iterations of the field update
         """
-        print( 'Performing %d iterations' %N_steps )
+        if mpi_comm.rank == 0:
+            print( 'Performing %d iterations' %N_steps )
 
         # Loop over the timesteps
         for i_step in range(N_steps):
@@ -70,8 +71,11 @@ class EM1DSolver(object):
             for k in range(1,self.Nz_local+1):
                 self.By[k] = self.By[k] \
                     - self.dt*(self.Ex[k+1]-self.Ex[k])/self.dz
-            # Apply periodic boundary conditions
-            # Set the values of the guard cells
+            # MPI exchange: send values of physical cells to neighbors
+            # receive values to be put into guard cells
+            By_from_left_proc, By_from_right_proc = \
+                exchange_guard_cells( self.By[1], self.By[self.Nz_local+1] )
+            # ASSIGNEMENT: Set the guard cells with the right value
             self.By[0] = 0
             self.By[self.Nz_local+1] = 0
 
@@ -80,7 +84,11 @@ class EM1DSolver(object):
             for k in range(1,self.Nz_local+1):
                 self.Ex[k] = self.Ex[k] \
                    - c**2*self.dt*(self.By[k]-self.By[k-1])/self.dz
-            # Apply periodic boundary conditions (do not modify)
+            # MPI exchange: send values of physical cells to neighbors
+            # receive values to be put into guard cells
+            Ex_from_left_proc, Ex_from_right_proc = \
+                exchange_guard_cells( self.Ex[1], self.Ex[self.Nz_local+1] )
+            # ASSIGNEMENT: Set the guard cells with the right value
             self.Ex[0] = 0
             self.Ex[self.Nz_local+1] = 0
 
@@ -93,13 +101,13 @@ class EM1DSolver(object):
         If save_figure is True, the plots are saved as PNG files,
         in a folder named `diagnostics`
         """
-        print( 'Plotting the fields at iteration %d' %self.n )
-
         # PLOTTING: NEW LINES RELATED TO MPI
         Ex_from_all_procs = mpi_comm.gather( self.Ex )
         By_from_all_procs = mpi_comm.gather( self.By )
 
         if mpi_comm.rank == 0:
+            print( 'Plotting the fields at iteration %d' %self.n )
+            
             global_Ex = np.concatenate( Ex_from_all_procs )
             global_By = np.concatenate( By_from_all_procs )
 
@@ -125,6 +133,27 @@ class EM1DSolver(object):
                 if os.path.exists('diagnostics') is False:
                     os.mkdir('diagnostics')
                 plt.savefig( "diagnostics/iteration%03d.png" %self.n)
+
+
+def exchange_guard_cells( physical_F_left, physical_F_right ):
+    # MPI exchanges of guard cells
+    # Send physical cell to left proc
+    req1 = mpi_comm.isend( physical_F_left,
+                dest=(mpi_comm.rank-1)%mpi_comm.size )
+    # Send physical cell to right proc
+    req2 = mpi_comm.isend( physical_F_right,
+                dest=(mpi_comm.rank+1)%mpi_comm.size )
+    # Receive value from right proc
+    req3 = mpi_comm.irecv( source=(mpi_comm.rank+1)%mpi_comm.size )
+    # Receive value from left proc
+    req4 = mpi_comm.irecv( source=(mpi_comm.rank-1)%mpi_comm.size )
+    # Wait for the processors to finish sending/receiving
+    req1.wait()
+    req2.wait()
+    F_from_right = req3.wait()
+    F_from_left = req4.wait()
+
+    return F_from_left, F_from_right
 
 if __name__ == '__main__':
 
