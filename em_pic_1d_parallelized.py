@@ -52,9 +52,9 @@ class EM1DSolver(object):
         L = 20.  # Length of the pulse
         def pulse_shape(z, t):
             return( np.cos(k*(z-c*t)) * np.exp(-(z-c*t-Lz/2)**2/L**2) )
-        z = self.dz*(mpi_comm.rank*self.Nz_local + np.arange(1,self.Nz_local+1))
-        self.Ex[1:-1] = pulse_shape( z, 0 )
-        self.By[1:-1] = 1./c * pulse_shape( z + 0.5*self.dz, -0.5*self.dt )
+        z = self.dz*(mpi_comm.rank*self.Nz_local + np.arange(0,self.Nz_local+2))
+        self.Ex = pulse_shape( z, 0 )
+        self.By = 1./c * pulse_shape( z + 0.5*self.dz, -0.5*self.dt )
 
 
     def step(self, N_steps):
@@ -74,7 +74,7 @@ class EM1DSolver(object):
             # MPI exchange: send values of physical cells to neighbors
             # receive values to be put into guard cells
             By_from_left_proc, By_from_right_proc = \
-                exchange_guard_cells( self.By[1], self.By[self.Nz_local+1] )
+                exchange_guard_cells( self.By[1], self.By[self.Nz_local] )
             # ASSIGNEMENT: Set the guard cells with the right value
             self.By[0] = 0
             self.By[self.Nz_local+1] = 0
@@ -87,7 +87,7 @@ class EM1DSolver(object):
             # MPI exchange: send values of physical cells to neighbors
             # receive values to be put into guard cells
             Ex_from_left_proc, Ex_from_right_proc = \
-                exchange_guard_cells( self.Ex[1], self.Ex[self.Nz_local+1] )
+                exchange_guard_cells( self.Ex[1], self.Ex[self.Nz_local] )
             # ASSIGNEMENT: Set the guard cells with the right value
             self.Ex[0] = 0
             self.Ex[self.Nz_local+1] = 0
@@ -102,8 +102,8 @@ class EM1DSolver(object):
         in a folder named `diagnostics`
         """
         # PLOTTING: NEW LINES RELATED TO MPI
-        Ex_from_all_procs = mpi_comm.gather( self.Ex )
-        By_from_all_procs = mpi_comm.gather( self.By )
+        Ex_from_all_procs = mpi_comm.gather( self.Ex[1:-1] )
+        By_from_all_procs = mpi_comm.gather( self.By[1:-1] )
 
         if mpi_comm.rank == 0:
             print( 'Plotting the fields at iteration %d' %self.n )
