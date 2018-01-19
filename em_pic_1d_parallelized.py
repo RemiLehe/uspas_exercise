@@ -38,12 +38,12 @@ class EM1DSolver(object):
         self.dt = dtcoef*self.dz/c  # Timestep of the simulation
         self.Lz = Lz
         self.n = 0  # Iteration number
-    
+
         # INITIALIZATION: NEW LINES RELATED TO MPI
         self.Nz_local = int( self.Nz_global/mpi_comm.size )
         self.Ex = np.zeros( self.Nz_local+2 )
         self.By = np.zeros( self.Nz_local+2 )
-        print('MPI rank %d initialized its local sub-domain.' %mpi_comm.rank) 
+        print('MPI rank %d initialized its local sub-domain.' %mpi_comm.rank)
         # The first and last element of Ex and By are guard cell:
         # They duplicate elements from the neighboring MPI processes
 
@@ -62,7 +62,7 @@ class EM1DSolver(object):
         Perform `N_steps` iterations of the field update
         """
         print( 'Performing %d iterations' %N_steps )
-        
+
         # Loop over the timesteps
         for i_step in range(N_steps):
 
@@ -83,10 +83,10 @@ class EM1DSolver(object):
             # Apply periodic boundary conditions (do not modify)
             self.Ex[0] = 0
             self.Ex[self.Nz_local+1] = 0
-    
+
             # Increment the iteration number
             self.n = self.n+1
-    
+
     def plot_fields( self, save_figure=False ):
         """
         Plot the Ex and By field using matplotlib
@@ -94,40 +94,44 @@ class EM1DSolver(object):
         in a folder named `diagnostics`
         """
         print( 'Plotting the fields at iteration %d' %self.n )
-        
+
         # PLOTTING: NEW LINES RELATED TO MPI
-        global_Ex = np.concatenate( mpi_comm.gather( self.Ex ) )
-        global_By = np.concatenate( mpi_comm.gather( self.By ) )
+        Ex_from_all_procs = mpi_comm.gather( self.Ex )
+        By_from_all_procs = mpi_comm.gather( self.By )
 
-        plt.clf()
-        plt.suptitle('Fields at iteration %d' %self.n)
-        # Plot of Ex
-        plt.subplot(211)
-        plt.plot( global_Ex, 'o-' )
-        plt.ylim(-1.1, 1.1)
-        plt.xlim(0, self.Lz)
-        plt.ylabel('$E_x^n$')
-        plt.xlabel('z')
-        # Plot of By
-        plt.subplot(212)
-        plt.plot( global_By, 'o-' )
-        plt.ylim(-1.1/c, 1.1/c)
-        plt.xlim(0, self.Lz)
-        plt.ylabel('$B_y^{n-1/2}$')
-        plt.xlabel('z')
+        if mpi_comm.rank == 0:
+            global_Ex = np.concatenate( Ex_from_all_procs )
+            global_By = np.concatenate( By_from_all_procs )
 
-        if save_figure is True:
-            # Check that the diagnostics folder exists
-            if os.path.exists('diagnostics') is False:
-                os.mkdir('diagnostics')
-            plt.savefig( "diagnostics/iteration%03d.png" %self.n)
+            plt.clf()
+            plt.suptitle('Fields at iteration %d' %self.n)
+            # Plot of Ex
+            plt.subplot(211)
+            plt.plot( global_Ex, 'o-' )
+            plt.ylim(-1.1, 1.1)
+            plt.xlim(0, self.Lz)
+            plt.ylabel('$E_x^n$')
+            plt.xlabel('z')
+            # Plot of By
+            plt.subplot(212)
+            plt.plot( global_By, 'o-' )
+            plt.ylim(-1.1/c, 1.1/c)
+            plt.xlim(0, self.Lz)
+            plt.ylabel('$B_y^{n-1/2}$')
+            plt.xlabel('z')
+
+            if save_figure is True:
+                # Check that the diagnostics folder exists
+                if os.path.exists('diagnostics') is False:
+                    os.mkdir('diagnostics')
+                plt.savefig( "diagnostics/iteration%03d.png" %self.n)
 
 if __name__ == '__main__':
-    
+
     # Remove the diagnostics folder if it exists
-    if mpi_comm.rank==0 and os.path.exists('diagnostics') is True:
+    if mpi_comm.rank==0 and os.path.exists('diagnostics'):
         shutil.rmtree('diagnostics')
-    
+
     # Run Nz iterations (in 10 batches, with plotting inbetween)
     em = EM1DSolver( )
     for i in range( 10 ):
