@@ -15,7 +15,7 @@ from scipy.constants import c # Numerical value of the speed of light
 
 class EM1DSolver(object):
 
-    def __init__(self, Nz=100, Lz=100., dtcoef=1.):
+    def __init__(self, Nz=200, Lz=100., dtcoef=1.):
         """
         Initialize the EM1DSolver object
 

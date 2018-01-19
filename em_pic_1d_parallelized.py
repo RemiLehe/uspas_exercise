@@ -17,7 +17,7 @@ from mpi4py.MPI import COMM_WORLD as mpi_comm
 
 class EM1DSolver(object):
 
-    def __init__(self, Nz_global=200, Lz=200., dtcoef=1.):
+    def __init__(self, Nz_global=10000, Lz=200., dtcoef=1.):
         """
         Initialize the EM1DSolver object
 
@@ -115,14 +115,16 @@ class EM1DSolver(object):
             plt.suptitle('Fields at iteration %d' %self.n)
             # Plot of Ex
             plt.subplot(211)
-            plt.plot( global_Ex, 'o-' )
+            z = self.dz*np.arange( self.Nz_global )
+            plt.plot( z, global_Ex, '-' )
             plt.ylim(-1.1, 1.1)
             plt.xlim(0, self.Lz)
             plt.ylabel('$E_x^n$')
             plt.xlabel('z')
             # Plot of By
             plt.subplot(212)
-            plt.plot( global_By, 'o-' )
+            z = self.dz*np.arange( self.Nz_global ) + 0.5*self.dz
+            plt.plot( z, global_By, '-' )
             plt.ylim(-1.1/c, 1.1/c)
             plt.xlim(0, self.Lz)
             plt.ylabel('$B_y^{n-1/2}$')
@@ -163,7 +165,7 @@ if __name__ == '__main__':
 
     # Run Nz iterations (in 10 batches, with plotting inbetween)
     em = EM1DSolver( )
-    for i in range( 10 ):
+    for i in range( 5 ):
         em.plot_fields( save_figure=True )
-        em.step( 10 )
+        em.step( 200 )
     em.plot_fields( save_figure=True )
